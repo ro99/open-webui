@@ -37,6 +37,7 @@ from apps.openai.main import (
     app as openai_app,
     get_all_models as get_openai_models,
     generate_chat_completion as generate_openai_chat_completion,
+    load_model,
 )
 
 from apps.audio.main import app as audio_app
@@ -977,6 +978,10 @@ async def get_models(user=Depends(get_verified_user)):
 
     return {"data": models}
 
+@app.post("/api/model/load")
+async def api_load_model(form_data: dict, user=Depends(get_verified_user)):
+    model = form_data["model"]
+    return await load_model(model)
 
 @app.post("/api/chat/completions")
 async def generate_chat_completions(form_data: dict, user=Depends(get_verified_user)):

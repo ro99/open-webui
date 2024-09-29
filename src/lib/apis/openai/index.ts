@@ -268,6 +268,35 @@ export const getOpenAIModelsDirect = async (
 		});
 };
 
+export const loadOpenAIModel = async (
+	token: string = '', 
+	model: string,
+	url: string = OPENAI_API_BASE_URL
+): Promise<[Response | null, AbortController]> => {
+	const controller = new AbortController();
+	let error = null;
+
+	const res = await fetch(`${url}/model/load`, {
+		signal: controller.signal,
+		method: 'POST',
+		headers: {
+			Authorization: `Bearer ${token}`,
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify({model: model})
+	}).catch((err) => {
+		console.log(err);
+		error = err;
+		return null;
+	});
+
+	if (error) {
+		throw error;
+	}
+
+	return [res, controller];
+};
+
 export const generateOpenAIChatCompletion = async (
 	token: string = '',
 	body: object,

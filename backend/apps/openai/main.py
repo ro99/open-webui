@@ -83,15 +83,15 @@ class OpenAIConfigForm(BaseModel):
     enable_openai_api: Optional[bool] = None
 
 
-async def load_the_model(model_id: str) -> dict[str, list] | list:
+async def load_the_model(model_id: str):
     log.info("load_the_model()")
     url = app.state.config.OPENAI_API_BASE_URLS[0]
     key = app.state.config.OPENAI_API_KEYS[0]
 
     request_body = {
-    "model_name": model_id,
-    "args": None, 
-    "settings": None 
+        "model_name": model_id,
+        "args": None, 
+        "settings": None 
     }
 
     headers = {}
@@ -129,9 +129,12 @@ async def load_the_model(model_id: str) -> dict[str, list] | list:
 
 
 @app.post("/model/load")
-async def load_model(model_id: str):
-    await load_the_model(model_id)
-    return {"ENABLE_OPENAI_API": app.state.config.ENABLE_OPENAI_API}
+async def load_model(form_data: dict):
+    try:
+        await load_the_model(form_data.model)
+        return {"ENABLE_OPENAI_API": app.state.config.ENABLE_OPENAI_API, "status": "Model loaded successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 @app.post("/config/update")
 async def update_config(form_data: OpenAIConfigForm, user=Depends(get_admin_user)):
