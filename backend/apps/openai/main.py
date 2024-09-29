@@ -83,15 +83,15 @@ class OpenAIConfigForm(BaseModel):
     enable_openai_api: Optional[bool] = None
 
 
-async def load_the_model(model_id: str):
+async def load_the_model(model_name: str):
     log.info("load_the_model()")
     url = app.state.config.OPENAI_API_BASE_URLS[0]
     key = app.state.config.OPENAI_API_KEYS[0]
 
-    request_body = {
-        "model_name": model_id,
-        "args": None, 
-        "settings": None 
+    payload = {
+        "model_name": model_name,
+        "args": {},
+        "settings": {}
     }
 
     headers = {}
@@ -99,11 +99,20 @@ async def load_the_model(model_id: str):
     headers["Content-Type"] = "application/json"
 
     r = None
+    session = None
+    streaming = False
 
     try:
-        r = requests.request(method="POST", url=f"{url}/model/load", headers=headers, json=request_body)
-        r.raise_for_status()
+        session = aiohttp.ClientSession(
+            trust_env=True, timeout=aiohttp.ClientTimeout(total=AIOHTTP_CLIENT_TIMEOUT)
+        )
+        r = await session.post(
+            url=f"{url}/models/load",
+            data=json.dumps(payload),
+            headers=headers,
+        )
 
+        r.raise_for_status()
         response_data = r.json()
         if "api.openai.com" in url:
             response_data["data"] = list(
@@ -128,10 +137,10 @@ async def load_the_model(model_id: str):
             )
 
 
-@app.post("/model/load")
+@app.post("/models/load")
 async def load_model(form_data: dict):
     try:
-        await load_the_model(form_data.model)
+        await load_the_model(form_data["model"])
         return {"ENABLE_OPENAI_API": app.state.config.ENABLE_OPENAI_API, "status": "Model loaded successfully"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

@@ -978,7 +978,7 @@ async def get_models(user=Depends(get_verified_user)):
 
     return {"data": models}
 
-@app.post("/api/model/load")
+@app.post("/api/models/load")
 async def api_load_model(form_data: dict, user=Depends(get_verified_user)):
     model = form_data["model"]
     return await load_model(model)

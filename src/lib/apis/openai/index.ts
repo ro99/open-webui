@@ -276,7 +276,7 @@ export const loadOpenAIModel = async (
 	const controller = new AbortController();
 	let error = null;
 
-	const res = await fetch(`${url}/model/load`, {
+	const res = await fetch(`${url}/models/load`, {
 		signal: controller.signal,
 		method: 'POST',
 		headers: {
