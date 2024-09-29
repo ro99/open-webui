@@ -22,6 +22,24 @@
 	import ChatBubbleOval from '$lib/components/icons/ChatBubbleOval.svelte';
 	import { goto } from '$app/navigation';
 
+	async function loadModel(modelId: string) {
+		try {
+			const response = await fetch('/model/load', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({ model_id: modelId }),
+			});
+			const data = await response.json();
+			console.log('Model loaded:', data);
+			// You can handle the response here, e.g., update UI or show a notification
+		} catch (error) {
+			console.error('Error loading model:', error);
+			// Handle the error, e.g., show an error message to the user
+		}
+	}
+
 	const i18n = getContext('i18n');
 	const dispatch = createEventDispatcher();
 
@@ -293,11 +311,15 @@
 							? 'bg-gray-100 dark:bg-gray-800 group-hover:bg-transparent'
 							: ''}"
 						data-arrow-selected={index === selectedModelIdx}
-						on:click={() => {
+						on:click={async () => {
 							value = item.value;
 							selectedModelIdx = index;
-
 							show = false;
+							// Load the selected model
+							await loadModel(item.value);
+
+							// Dispatch a custom event if needed
+							dispatch('modelSelected', item);
 						}}
 					>
 						<div class="flex flex-col">

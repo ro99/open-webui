@@ -83,6 +83,56 @@ class OpenAIConfigForm(BaseModel):
     enable_openai_api: Optional[bool] = None
 
 
+async def load_the_model(model_id: str) -> dict[str, list] | list:
+    log.info("load_the_model()")
+    url = app.state.config.OPENAI_API_BASE_URLS[0]
+    key = app.state.config.OPENAI_API_KEYS[0]
+
+    request_body = {
+    "model_name": model_id,
+    "args": None, 
+    "settings": None 
+    }
+
+    headers = {}
+    headers["Authorization"] = f"Bearer {key}"
+    headers["Content-Type"] = "application/json"
+
+    r = None
+
+    try:
+        r = requests.request(method="POST", url=f"{url}/model/load", headers=headers, json=request_body)
+        r.raise_for_status()
+
+        response_data = r.json()
+        if "api.openai.com" in url:
+            response_data["data"] = list(
+                filter(lambda model: "gpt" in model["id"], response_data["data"])
+            )
+
+        return response_data
+    except Exception as e:
+        log.exception(e)
+        error_detail = "Open WebUI: Server Connection Error"
+        if r is not None:
+            try:
+                res = r.json()
+                if "error" in res:
+                    error_detail = f"External: {res['error']}"
+            except Exception:
+                error_detail = f"External: {e}"
+
+        raise HTTPException(
+            status_code=r.status_code if r else 500,
+            detail=error_detail,
+            )
+
+
+@app.post("/model/load")
+async def load_model(model_id: str):
+    await load_the_model(model_id)
+    return {"ENABLE_OPENAI_API": app.state.config.ENABLE_OPENAI_API}
+
 @app.post("/config/update")
 async def update_config(form_data: OpenAIConfigForm, user=Depends(get_admin_user)):
     app.state.config.ENABLE_OPENAI_API = form_data.enable_openai_api
