@@ -90,8 +90,6 @@ async def load_the_model(model_name: str):
 
     payload = {
         "model_name": model_name,
-        "args": {},
-        "settings": {}
     }
 
     headers = {}
