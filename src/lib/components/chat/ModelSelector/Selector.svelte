@@ -21,6 +21,7 @@
 	import Switch from '$lib/components/common/Switch.svelte';
 	import ChatBubbleOval from '$lib/components/icons/ChatBubbleOval.svelte';
 	import { goto } from '$app/navigation';
+	import { writable } from 'svelte/store';
 	import { loadOpenAIModel } from '$lib/apis/openai';
 
 	const i18n = getContext('i18n');
@@ -52,6 +53,25 @@
 	let ollamaVersion = null;
 
 	let selectedModelIdx = 0;
+
+    let isModelLoading = writable(false);
+
+    const handleModelSelection = async (item, index) => {
+        isModelLoading.set(true);
+        try {
+            await loadOpenAIModel(localStorage.token, item.value);
+			value = item.value;
+			selectedModelIdx = index;
+            dispatch('modelSelected', item);
+        } catch (error) {
+            console.error('Error loading model:', error);
+            toast.error($i18n.t('Failed to load model. Please try again.'));
+			value = '';
+        } finally {
+            isModelLoading.set(false);
+			show = false;
+        }
+    };
 
 	const fuse = new Fuse(
 		items
@@ -234,11 +254,41 @@
 		<div
 			class="flex w-full text-left px-0.5 outline-none bg-transparent truncate text-lg font-medium placeholder-gray-400 focus:outline-none"
 		>
-			{#if selectedModel}
-				{selectedModel.label}
-			{:else}
-				{placeholder}
-			{/if}
+        {#if $isModelLoading}
+            <div class="flex items-center">
+                <svg
+                    class="size-4 mr-2"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    xmlns="http://www.w3.org/2000/svg"
+                >
+                    <style>
+                        .spinner_ajPY {
+                            transform-origin: center;
+                            animation: spinner_AtaB 0.75s infinite linear;
+                        }
+                        @keyframes spinner_AtaB {
+                            100% {
+                                transform: rotate(360deg);
+                            }
+                        }
+                    </style>
+                    <path
+                        d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z"
+                        opacity=".25"
+                    />
+                    <path
+                        d="M10.14,1.16a11,11,0,0,0-9,8.92A1.59,1.59,0,0,0,2.46,12,1.52,1.52,0,0,0,4.11,10.7a8,8,0,0,1,6.66-6.61A1.42,1.42,0,0,0,12,2.69h0A1.57,1.57,0,0,0,10.14,1.16Z"
+                        class="spinner_ajPY"
+                    />
+                </svg>
+                {$i18n.t('Loading model...')}
+            </div>
+        {:else if selectedModel}
+            {selectedModel.label}
+        {:else}
+            {placeholder}
+        {/if}
 			<ChevronDown className=" self-center ml-2 size-3" strokeWidth="2.5" />
 		</div>
 	</DropdownMenu.Trigger>
@@ -294,16 +344,7 @@
 							? 'bg-gray-100 dark:bg-gray-800 group-hover:bg-transparent'
 							: ''}"
 						data-arrow-selected={index === selectedModelIdx}
-						on:click={async () => {
-							value = item.value;
-							selectedModelIdx = index;
-							show = false;
-							// Load the selected model
-							await loadOpenAIModel(localStorage.token, item.value);
-
-							// Dispatch a custom event if needed
-							dispatch('modelSelected', item);
-						}}
+						on:click={() => handleModelSelection(item, index)}
 					>
 						<div class="flex flex-col">
 							{#if $mobile && (item?.model?.info?.meta?.tags ?? []).length > 0}

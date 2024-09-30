@@ -30,6 +30,7 @@ from open_webui.apps.openai.main import app as openai_app
 from open_webui.apps.openai.main import (
     generate_chat_completion as generate_openai_chat_completion,
 )
+from open_webui.apps.openai.main import load_model as load_openai_model
 from open_webui.apps.openai.main import get_all_models as get_openai_models
 from open_webui.apps.rag.main import app as rag_app
 from open_webui.apps.rag.utils import get_rag_context, rag_template
@@ -1042,6 +1043,10 @@ async def get_models(user=Depends(get_verified_user)):
 
     return {"data": models}
 
+@app.post("/api/models/load")
+async def api_load_model(form_data: dict, user=Depends(get_verified_user)):
+    model = form_data["model"]
+    return await load_openai_model(model)
 
 @app.post("/api/chat/completions")
 async def generate_chat_completions(form_data: dict, user=Depends(get_verified_user)):

@@ -269,32 +269,34 @@ export const getOpenAIModelsDirect = async (
 };
 
 export const loadOpenAIModel = async (
-	token: string = '', 
-	model: string,
-	url: string = OPENAI_API_BASE_URL
-): Promise<[Response | null, AbortController]> => {
-	const controller = new AbortController();
-	let error = null;
+    token: string = '', 
+    model: string,
+    url: string = OPENAI_API_BASE_URL
+): Promise<any> => {
+    const controller = new AbortController();
+    let error = null;
 
-	const res = await fetch(`${url}/models/load`, {
-		signal: controller.signal,
-		method: 'POST',
-		headers: {
-			Authorization: `Bearer ${token}`,
-			'Content-Type': 'application/json'
-		},
-		body: JSON.stringify({model: model})
-	}).catch((err) => {
-		console.log(err);
-		error = err;
-		return null;
-	});
+    try {
+        const res = await fetch(`${url}/models/load`, {
+            signal: controller.signal,
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({model: model})
+        });
 
-	if (error) {
-		throw error;
-	}
+        if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+        }
 
-	return [res, controller];
+        const data = await res.json();
+        return data;
+    } catch (err) {
+        console.error(err);
+        throw err;
+    }
 };
 
 export const generateOpenAIChatCompletion = async (

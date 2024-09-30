@@ -11,7 +11,7 @@
             "module": "uvicorn",
             "cwd": "${workspaceFolder}/backend",
             "console": "integratedTerminal",
-            "args": ["main:app","--port", "8080", "--host", "0.0.0.0", "--forwarded-allow-ips", "*", "--reload"],
+            "args": ["open_webui.main:app","--port", "8080", "--host", "0.0.0.0", "--forwarded-allow-ips", "*", "--reload"],
             "env": {
                 "ENABLE_OLLAMA_API": "False",
             }
