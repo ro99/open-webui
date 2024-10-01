@@ -16,21 +16,28 @@
 	export let showSetDefault = true;
 
 	const saveDefaultModel = async () => {
-		const hasEmptyModel = selectedModels.filter((it) => it === '');
-		if (hasEmptyModel.length) {
-			toast.error($i18n.t('Choose a model before saving...'));
-			return;
+		if (selectedModels.length === 0 || selectedModels[0] === '') {
+			// User has selected no model, so we'll remove the default
+			settings.set({ ...$settings, models: [] });
+			await updateUserSettings(localStorage.token, { ui: $settings });
+			selectedModels = [''];  // Set to empty string instead of removing
+			toast.success($i18n.t('Default model removed'));
+		} else {
+			// User has selected a model, so we'll set it as default
+			settings.set({ ...$settings, models: selectedModels });
+			await updateUserSettings(localStorage.token, { ui: $settings });
+			toast.success($i18n.t('Default model updated'));
 		}
-		settings.set({ ...$settings, models: selectedModels });
-		await updateUserSettings(localStorage.token, { ui: $settings });
-
-		toast.success($i18n.t('Default model updated'));
 	};
 
-	$: if (selectedModels.length > 0 && $models.length > 0) {
-		selectedModels = selectedModels.map((model) =>
-			$models.map((m) => m.id).includes(model) ? model : ''
-		);
+	$: if ($models.length > 0) {
+		if (selectedModels.length === 0 || (selectedModels.length === 1 && selectedModels[0] === '')) {
+			selectedModels = [''];
+		} else {
+			selectedModels = selectedModels.map((model) =>
+				$models.map((m) => m.id).includes(model) ? model : ''
+			);
+		}
 	}
 </script>
 

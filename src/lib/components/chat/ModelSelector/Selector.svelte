@@ -284,11 +284,11 @@
                 </svg>
                 {$i18n.t('Loading model...')}
             </div>
-        {:else if selectedModel}
-            {selectedModel.label}
-        {:else}
-            {placeholder}
-        {/if}
+		{:else if selectedModel && selectedModel !== ''}
+			{selectedModel.label}
+		{:else}
+			{placeholder}
+		{/if}
 			<ChevronDown className=" self-center ml-2 size-3" strokeWidth="2.5" />
 		</div>
 	</DropdownMenu.Trigger>

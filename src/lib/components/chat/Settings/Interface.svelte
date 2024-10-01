@@ -137,7 +137,7 @@
 
 	const updateInterfaceHandler = async () => {
 		saveSettings({
-			models: [defaultModelId]
+			models: defaultModelId ? [defaultModelId] : []
 		});
 	};
 
@@ -217,11 +217,11 @@
 					bind:value={defaultModelId}
 					placeholder="Select a model"
 				>
-					<option value="" disabled selected>{$i18n.t('Select a model')}</option>
+					<option value="">{$i18n.t('No default model')}</option>
 					{#each $models.filter((model) => model.id) as model}
 						<option value={model.id} class="bg-gray-100 dark:bg-gray-700">{model.name}</option>
 					{/each}
-				</select>
+			</select>
 			</div>
 		</div>
 		<hr class=" dark:border-gray-850" />

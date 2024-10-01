@@ -39,16 +39,14 @@
 
 <form
 	class="flex flex-col h-full justify-between space-y-3 text-sm"
-	on:submit|preventDefault={async () => {
-		// console.log('submit');
+    on:submit|preventDefault={async () => {
+        await setDefaultModels(localStorage.token, defaultModelId || null);
+        await updateUserPermissions(localStorage.token, permissions);
+        await updateModelFilterConfig(localStorage.token, whitelistEnabled, whitelistModels.filter(m => m !== ''));
+        saveHandler();
 
-		await setDefaultModels(localStorage.token, defaultModelId);
-		await updateUserPermissions(localStorage.token, permissions);
-		await updateModelFilterConfig(localStorage.token, whitelistEnabled, whitelistModels);
-		saveHandler();
-
-		await config.set(await getBackendConfig());
-	}}
+        await config.set(await getBackendConfig());
+    }}
 >
 	<div class=" space-y-3 overflow-y-scroll max-h-full">
 		<div>
@@ -200,11 +198,11 @@
 							bind:value={defaultModelId}
 							placeholder="Select a model"
 						>
-							<option value="" disabled selected>{$i18n.t('Select a model')}</option>
+							<option value="">{$i18n.t('No default model')}</option>
 							{#each $models.filter((model) => model.id) as model}
 								<option value={model.id} class="bg-gray-100 dark:bg-gray-700">{model.name}</option>
 							{/each}
-						</select>
+					</select>
 					</div>
 				</div>
 

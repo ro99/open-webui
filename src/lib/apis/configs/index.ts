@@ -58,34 +58,34 @@ export const exportConfig = async (token: string) => {
 	return res;
 };
 
-export const setDefaultModels = async (token: string, models: string) => {
-	let error = null;
+export const setDefaultModels = async (token: string, models: string | null) => {
+    let error = null;
 
-	const res = await fetch(`${WEBUI_API_BASE_URL}/configs/default/models`, {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-			Authorization: `Bearer ${token}`
-		},
-		body: JSON.stringify({
-			models: models
-		})
-	})
-		.then(async (res) => {
-			if (!res.ok) throw await res.json();
-			return res.json();
-		})
-		.catch((err) => {
-			console.log(err);
-			error = err.detail;
-			return null;
-		});
+    const res = await fetch(`${WEBUI_API_BASE_URL}/configs/default/models`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+            models: models || ''
+        })
+    })
+        .then(async (res) => {
+            if (!res.ok) throw await res.json();
+            return res.json();
+        })
+        .catch((err) => {
+            console.log(err);
+            error = err.detail;
+            return null;
+        });
 
-	if (error) {
-		throw error;
-	}
+    if (error) {
+        throw error;
+    }
 
-	return res;
+    return res;
 };
 
 export const setDefaultPromptSuggestions = async (token: string, promptSuggestions: string) => {
