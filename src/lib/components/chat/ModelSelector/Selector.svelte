@@ -58,6 +58,7 @@
 
     const handleModelSelection = async (item, index) => {
         isModelLoading.set(true);
+		show = false;
         try {
             await loadOpenAIModel(localStorage.token, item.value);
 			value = item.value;
@@ -69,7 +70,6 @@
 			value = '';
         } finally {
             isModelLoading.set(false);
-			show = false;
         }
     };
 
